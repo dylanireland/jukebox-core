@@ -1,10 +1,10 @@
 pragma solidity ^0.8.0;
 contract Jukebox {
-  uint qLength;
+  uint64 qLength;
 
   struct Song {
-    uint start;
-    uint end;
+    uint256 start;
+    uint256 end;
     string url;
     string coverUrl;
     string title;
@@ -12,9 +12,7 @@ contract Jukebox {
     address publisher;
   }
 
-  event SongAdded(uint256 start, uint256 end, string url, string coverUrl, string title, string artist, address publisher);
-
-  event queueUp (uint indexed end, string indexed url, string indexed title);
+  event SongAdded(uint256);
 
   mapping(uint=>Song) public queue;
 
@@ -22,18 +20,19 @@ contract Jukebox {
     qLength = 0;
   }
 
-  function addSong(string memory url, string memory coverUrl, string memory title, string memory artist, uint duration) public {
-    uint depth = getQueueDepth();
-    uint startPosition = block.number;
-    if (depth != 0) {
+  function addSong(string memory url, string memory coverUrl, string memory title, string memory artist, uint8 duration) public {
+    uint256 startPosition;
+    if (getQueueDepth() != 0) {
         startPosition = queue[qLength - 1].end;
+    } else {
+        startPosition = block.number;
     }
 
     queue[qLength] = Song(startPosition, startPosition + duration, url, coverUrl, title, artist, msg.sender);
 
     qLength++;
 
-    emit SongAdded(startPosition, startPosition + duration, url, coverUrl, title, artist, msg.sender);
+    emit SongAdded(startPosition);
   }
 
   function getCurrentSong() public view returns (string memory, string memory, string memory, string memory, address, uint, uint) {
@@ -43,13 +42,13 @@ contract Jukebox {
     }
     Song memory song = queue[qLength - depth];
     return (song.url, song.coverUrl, song.title, song.artist, song.publisher, song.start, song.end);
-  }
+  } 
 
   function getNextStartTime() public view returns (uint) {
     if (getQueueDepth() == 0) {
         return block.number;
     }
-
+    
     return (queue[qLength - 1].start);
   }
 
