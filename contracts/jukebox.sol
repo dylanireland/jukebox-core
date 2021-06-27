@@ -20,7 +20,8 @@ contract Jukebox {
     qLength = 0;
   }
 
-  function addSong(string memory url, string memory coverUrl, string memory title, string memory artist, uint8 duration) public {
+  function addSong(string memory url, string memory coverUrl, string memory title, string memory artist, uint8 duration) external payable {
+    require(msg.value == calculateFee(duration), "Fee provided must equal fee calculation.");
     uint256 startPosition;
     if (getQueueDepth() != 0) {
         startPosition = queue[qLength - 1].end;
@@ -70,6 +71,10 @@ contract Jukebox {
 
   function getQueueLength() public view returns (uint) {
       return qLength;
+  }
+  
+  function calculateFee(uint8 duration) private view returns (uint256) {
+      return (duration * duration * 20000000000000 + getQueueDepth() * 20000000000000);
   }
 
 }
