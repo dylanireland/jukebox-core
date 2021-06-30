@@ -12,7 +12,7 @@ contract Jukebox {
     address publisher;
   }
 
-  event SongAdded(uint256);
+  event SongAdded(address indexed, uint256);
 
   mapping(uint=>Song) public queue;
 
@@ -33,11 +33,11 @@ contract Jukebox {
 
     qLength++;
 
-    emit SongAdded(startPosition);
+    emit SongAdded(msg.sender, startPosition);
   }
 
-  function getCurrentSong() public view returns (string memory, string memory, string memory, string memory, address, uint, uint) {
-    uint depth = getQueueDepth();
+  function getCurrentSong() public view returns (string memory, string memory, string memory, string memory, address, uint256, uint256) {
+    uint256 depth = getQueueDepth();
     if (depth == 0) {
         return ("", "", "", "", 0x0000000000000000000000000000000000000000, 0, 0);
     }
@@ -45,7 +45,7 @@ contract Jukebox {
     return (song.url, song.coverUrl, song.title, song.artist, song.publisher, song.start, song.end);
   } 
 
-  function getNextStartTime() public view returns (uint) {
+  function getNextStartTime() public view returns (uint256) {
     if (getQueueDepth() == 0) {
         return block.number;
     }
@@ -53,9 +53,9 @@ contract Jukebox {
     return (queue[qLength - 1].start);
   }
 
-  function getQueueDepth() public view returns (uint) {
+  function getQueueDepth() public view returns (uint256) {
       uint qDepth = 0;
-      for (uint i = qLength; i > 0; i--) {
+      for (uint256 i = qLength; i > 0; i--) {
           if (queue[i - 1].start <= block.number && queue[i - 1].end > block.number) {
               qDepth = qLength - i + 1;
               break;
@@ -64,17 +64,17 @@ contract Jukebox {
       return qDepth;
   }
 
-  function getSongAtIndex(uint index) public view returns (string memory, string memory, string memory, string memory, address, uint, uint) {
+  function getSongAtIndex(uint index) public view returns (string memory, string memory, string memory, string memory, address, uint256, uint256) {
     Song memory song = queue[index];
     return (song.url, song.coverUrl, song.title, song.artist, song.publisher, song.start, song.end);
   }
 
-  function getQueueLength() public view returns (uint) {
+  function getQueueLength() public view returns (uint256) {
       return qLength;
   }
   
   function calculateFee(uint8 duration) private view returns (uint256) {
-      return (duration * duration * 20000000000000 + getQueueDepth() * 20000000000000);
+      return (uint256(duration) * uint256(duration) * 20000000000000 + (getQueueDepth() * 200000000000000));
   }
 
 }
